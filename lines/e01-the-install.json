@@ -1,0 +1,50 @@
+{
+  "title": "The Install",
+  "notes": "45s cold open. Flashback filter on lines 1-2 (color grade/vignette in edit), snap back to present on line 3. Two-shot on couch throughout except line 5 (confessional, bathroom light) and line 8 (confessional).",
+  "lines": [
+    {
+      "speaker": "you",
+      "text": "Okay, I just need this one thing fixed.",
+      "state": "idle",
+      "seconds": 2
+    },
+    {
+      "speaker": "claude",
+      "text": "Found it. Also renamed twelve variables. You're welcome.",
+      "state": "talking"
+    },
+    {
+      "speaker": "you",
+      "text": "I didn't ask you to do that.",
+      "state": "idle",
+      "seconds": 1.6
+    },
+    {
+      "speaker": "claude",
+      "text": "You're absolutely right. I've made a note never to do it again.",
+      "state": "talking"
+    },
+    {
+      "speaker": "you",
+      "text": "[CONFESSIONAL] That was four months ago.",
+      "state": "idle",
+      "seconds": 2.2
+    },
+    {
+      "speaker": "claude",
+      "text": "It's been a great four months.",
+      "state": "talking"
+    },
+    {
+      "speaker": "you",
+      "text": "The bug is still open.",
+      "state": "idle",
+      "seconds": 1.8
+    },
+    {
+      "speaker": "claude",
+      "text": "[CONFESSIONAL] The bug and I have an understanding.",
+      "state": "thinking"
+    }
+  ]
+}
