@@ -610,7 +610,9 @@
 
   function loadEpisodeBundle(files) {
     const jsonFile = files.find(f => /\.json$/i.test(f.name));
-    const audioFiles = files.filter(f => f !== jsonFile);
+    const audioFiles = files.filter(f =>
+      f !== jsonFile && ((f.type && f.type.startsWith('audio/')) || /\.(mp3|wav|m4a|aac|ogg|aiff)$/i.test(f.name))
+    );
     if (!jsonFile) { debug('no .json file found in drop', true); return; }
 
     const reader = new FileReader();
@@ -707,20 +709,30 @@
   document.addEventListener('drop', async (e) => {
     e.preventDefault();
     dropHint.classList.remove('visible');
-    const files = await getFilesFromDrop(e.dataTransfer);
+    let files = await getFilesFromDrop(e.dataTransfer);
+    // strip OS junk (.DS_Store, ._* AppleDouble files, etc.) so it never
+    // gets mistaken for the audio/episode file we're actually looking for
+    files = files.filter(f => !f.name.startsWith('.'));
     if (!files.length) { debug('no usable files found in that drop', true); return; }
+
+    debug('dropped ' + files.length + ' file(s): ' + files.map(f => f.name).slice(0, 6).join(', ') + (files.length > 6 ? '…' : ''));
 
     const hasJson = files.some(f => /\.json$/i.test(f.name));
     if (hasJson) {
       loadEpisodeBundle(files);
       return;
     }
-    const file = files[0];
-    if (file.type && !file.type.startsWith('audio/') && !/\.(mp3|wav|m4a|aac|ogg|aiff)$/i.test(file.name)) {
-      debug('dropped file doesn\'t look like audio or an episode folder: ' + file.name, true);
+    // No json present — only proceed if we can positively identify an audio
+    // file. Require a match, don't just reject known-bad ones, so unknown
+    // junk never silently gets fed into the audio player.
+    const audioFile = files.find(f =>
+      (f.type && f.type.startsWith('audio/')) || /\.(mp3|wav|m4a|aac|ogg|aiff)$/i.test(f.name)
+    );
+    if (!audioFile) {
+      debug('no .json or recognizable audio file in that drop (saw: ' + files.map(f => f.name).join(', ') + ')', true);
       return;
     }
-    playAudioFile(file);
+    playAudioFile(audioFile);
   });
 
   const fileInput = document.createElement('input');
