@@ -384,7 +384,6 @@
   let autoPlay = false;
   let recognition = null;
   let listening = false;
-  let shouldListen = false;
   let autoAdvanceTimer = null;
 
   let currentState = 'idle';
@@ -571,22 +570,24 @@
     recognition.onend = () => {
       listening = false;
       // continuous mode still ends on some browsers after silence — restart
-      // automatically if we're supposed to still be listening.
-      if (voiceMode && shouldListen) {
+      // automatically if voice mode is still supposed to be on.
+      if (voiceMode) {
         try { recognition.start(); listening = true; } catch (e) { /* already starting */ }
       }
     };
     return true;
   }
 
-  function resumeListening() {
-    shouldListen = true;
+  // Mic runs continuously for the whole voice-mode session — starting and
+  // stopping SpeechRecognition per line was both unreliable across browsers
+  // and, on a file:// page, appeared to re-trigger the permission prompt on
+  // every restart. Instead we gate on whether we ACT on what's heard.
+  function startListening() {
     if (!voiceMode || !recognition || listening) return;
-    try { recognition.start(); listening = true; } catch (e) { /* ignore double-start */ }
+    try { recognition.start(); listening = true; } catch (e) { /* already running */ }
   }
 
-  function pauseListening() {
-    shouldListen = false;
+  function stopListening() {
     if (recognition && listening) recognition.stop();
   }
 
@@ -608,8 +609,10 @@
       if (/\bback\b/.test(transcript)) { playLineAt(queueIndex - 1); return; }
     }
 
-    // Not a command — if it's currently your turn, treat this as you having
-    // delivered your line, and cue Claude's line automatically.
+    // Not a command. Only treat this as "you delivered your line" if it's
+    // actually your turn right now — during Claude's lines we ignore
+    // non-command speech entirely (guards against picking up his own
+    // audio through the mic and mistaking it for your cue).
     if (episode && queueIndex >= 0 && episode.lines[queueIndex]) {
       const speaker = (episode.lines[queueIndex].speaker || '').toLowerCase();
       if (!speaker.includes('claude')) {
@@ -627,15 +630,12 @@
       autoPlay = false; // mutually exclusive with autoplay to avoid double-advance
       hudAutoplay.textContent = 'off';
       voiceMode = true;
-      hudVoice.textContent = 'ON — armed on your lines';
+      hudVoice.textContent = 'ON — listening (ignores Claude\'s turn)';
       debug('voice director mode ON — say "action" / "cut" / "again" / "back"');
-      // Arm immediately if it's currently your turn (or nothing loaded yet).
-      const cur = episode && queueIndex >= 0 ? episode.lines[queueIndex] : null;
-      const curIsClaude = cur && (cur.speaker || '').toLowerCase().includes('claude');
-      if (!curIsClaude) resumeListening();
+      startListening();
     } else {
       voiceMode = false;
-      pauseListening();
+      stopListening();
       hudVoice.textContent = 'off';
       debug('voice director mode off');
     }
@@ -645,7 +645,7 @@
     autoPlay = !autoPlay;
     if (autoPlay) {
       voiceMode = false; // mutually exclusive
-      pauseListening();
+      stopListening();
       hudVoice.textContent = 'off';
     }
     hudAutoplay.textContent = autoPlay ? 'ON — hands-free timer' : 'off';
@@ -796,10 +796,8 @@
     speakerLabel.classList.toggle('claude', isClaude);
     typeLine(cleanText);
 
-    if (voiceMode) {
-      if (isClaude) pauseListening();
-      else resumeListening();
-    }
+    // (voice mode no longer arms/disarms per line — mic runs continuously;
+    // handleVoiceInput ignores non-command speech during Claude's turns)
 
     const state = line.state || (isClaude ? 'talking' : 'idle');
     const dur = line.seconds || estimateDuration(cleanText);
