@@ -55,6 +55,20 @@ Rendered lines don't need to exist yet — you can rehearse and shoot blocking w
 
 Example script: [`lines/e01-the-install.json`](lines/e01-the-install.json).
 
+## Rendering real audio
+
+`render-lines.mjs` batch-renders every Claude line in an episode through ElevenLabs TTS, saves numbered mp3s to `/audio`, and writes the resulting filenames back into the episode's `.json` — no manual matching needed, the queue picks them up automatically.
+
+```
+node render-lines.mjs lines/e01-the-install.json --voice=<VOICE_ID> --key=<YOUR_KEY>
+```
+
+(or set `ELEVENLABS_API_KEY` in your environment instead of `--key`)
+
+- Skips lines that already have an `audio` field — safe to re-run after adding new lines. Pass `--force` to re-render everything.
+- Retries once on failure, then reports and exits non-zero without corrupting the JSON.
+- Voice ID: pick one canon voice for Claude across the whole series (see brand-consistency note below) — find IDs at [elevenlabs.io/app/voice-library](https://elevenlabs.io/app/voice-library) or via `GET /v1/voices`.
+
 ## Known limitation
 
 Audio playback is plain HTML5 `<audio>` — reliable, but real-time audio-reactive mouth movement was deliberately removed (Web Audio's AnalyserNode was a fragile dependency: autoplay policy, MIME sniffing, and iframe quirks all broke it in testing). The mouth is timed to clip *duration*, not amplitude. If a clip won't decode at all, mouth timing falls back to the word-count estimate automatically — the face never just sits there silently broken.
