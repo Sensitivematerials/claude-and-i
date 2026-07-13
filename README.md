@@ -69,6 +69,10 @@ node render-lines.mjs lines/e01-the-install.json --voice=<VOICE_ID> --key=<YOUR_
 - Retries once on failure, then reports and exits non-zero without corrupting the JSON.
 - Voice ID: pick one canon voice for Claude across the whole series (see brand-consistency note below) — find IDs at [elevenlabs.io/app/voice-library](https://elevenlabs.io/app/voice-library) or via `GET /v1/voices`.
 
+**Canon voice: Callum** (`N2lVS1w4EtoT3dr4eOWO`) — "husky trickster," locked 2026-07-13 after auditioning against River (neutral/deadpan) and Eric (smooth/trustworthy) on the "You're absolutely right" line. This is now the script's default — `--voice` only needs to be passed for guest characters.
+
+**Never commit your API key.** Set `ELEVENLABS_API_KEY` in your shell environment (or pass `--key` inline each time) — it should never end up in a file that gets pushed.
+
 ## Known limitation
 
 Audio playback is plain HTML5 `<audio>` — reliable, but real-time audio-reactive mouth movement was deliberately removed (Web Audio's AnalyserNode was a fragile dependency: autoplay policy, MIME sniffing, and iframe quirks all broke it in testing). The mouth is timed to clip *duration*, not amplitude. If a clip won't decode at all, mouth timing falls back to the word-count estimate automatically — the face never just sits there silently broken.

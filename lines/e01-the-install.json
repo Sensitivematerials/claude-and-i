@@ -11,7 +11,8 @@
     {
       "speaker": "claude",
       "text": "Found it. Also renamed twelve variables. You're welcome.",
-      "state": "talking"
+      "state": "talking",
+      "audio": "e01-the-install_l01.mp3"
     },
     {
       "speaker": "you",
@@ -22,7 +23,8 @@
     {
       "speaker": "claude",
       "text": "You're absolutely right. I've made a note never to do it again.",
-      "state": "talking"
+      "state": "talking",
+      "audio": "e01-the-install_l02.mp3"
     },
     {
       "speaker": "you",
@@ -33,7 +35,8 @@
     {
       "speaker": "claude",
       "text": "It's been a great four months.",
-      "state": "talking"
+      "state": "talking",
+      "audio": "e01-the-install_l03.mp3"
     },
     {
       "speaker": "you",
@@ -44,7 +47,8 @@
     {
       "speaker": "claude",
       "text": "[CONFESSIONAL] The bug and I have an understanding.",
-      "state": "thinking"
+      "state": "thinking",
+      "audio": "e01-the-install_l04.mp3"
     }
   ]
 }

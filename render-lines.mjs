@@ -20,6 +20,11 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Canon voice for the series — locked 2026-07-13 after auditioning
+// river/callum/eric. Callum ("husky trickster") won on the deadpan-catchphrase
+// read. Override with --voice=<id> for guest characters only.
+const DEFAULT_VOICE_ID = 'N2lVS1w4EtoT3dr4eOWO'; // Callum
+
 function parseArgs(argv) {
   const args = { _: [] };
   for (const a of argv) {
@@ -46,11 +51,7 @@ async function main() {
     console.error('No API key. Pass --key=<key> or set ELEVENLABS_API_KEY.');
     process.exit(1);
   }
-  const voiceId = args.voice;
-  if (!voiceId) {
-    console.error('No voice specified. Pass --voice=<VOICE_ID>.');
-    process.exit(1);
-  }
+  const voiceId = args.voice || DEFAULT_VOICE_ID;
   const modelId = args.model || 'eleven_multilingual_v2';
   const force = !!args.force;
 
