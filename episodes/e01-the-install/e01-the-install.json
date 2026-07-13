@@ -1,6 +1,6 @@
 {
   "title": "The Install",
-  "notes": "45s cold open. Flashback filter on lines 1-2 (color grade/vignette in edit), snap back to present on line 3. Two-shot on couch throughout except line 5 (confessional, bathroom light) and line 8 (confessional).",
+  "notes": "45s cold open. Flashback filter on lines 1-2 (color grade/vignette in edit), snap back to present on line 3. Two-shot on couch throughout except line 5 and line 8 (confessional, bathroom light).",
   "lines": [
     {
       "speaker": "you",
@@ -28,7 +28,8 @@
     },
     {
       "speaker": "you",
-      "text": "[CONFESSIONAL] That was four months ago.",
+      "text": "That was four months ago.",
+      "direction": "CONFESSIONAL — bathroom light",
       "state": "idle",
       "seconds": 2.2
     },
@@ -46,7 +47,8 @@
     },
     {
       "speaker": "claude",
-      "text": "[CONFESSIONAL] The bug and I have an understanding.",
+      "text": "The bug and I have an understanding.",
+      "direction": "CONFESSIONAL — bathroom light",
       "state": "thinking",
       "audio": "e01-the-install_l04.mp3"
     }

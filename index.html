@@ -647,6 +647,12 @@
     reader.readAsText(jsonFile);
   }
 
+  // Same guard as render-lines.mjs: a bracketed tag should never end up
+  // spoken or captioned, even if someone embeds one in "text" by mistake.
+  function stripDirectionTag(text) {
+    return (text || '').replace(/^\s*\[[^\]]*\]\s*/, '').trim();
+  }
+
   function playLineAt(index) {
     if (!episode) { debug('no episode loaded — press L or drop a .json', true); return; }
     if (index < 0) { debug('already at the first line'); return; }
@@ -656,13 +662,14 @@
     const line = episode.lines[index];
     const speakerRaw = line.speaker || 'claude';
     const isClaude = speakerRaw.toLowerCase().indexOf('claude') !== -1;
+    const cleanText = stripDirectionTag(line.text || '');
 
     speakerLabel.textContent = speakerRaw.toUpperCase();
     speakerLabel.classList.toggle('claude', isClaude);
-    typeLine(line.text || '');
+    typeLine(cleanText);
 
     const state = line.state || (isClaude ? 'talking' : 'idle');
-    const dur = line.seconds || estimateDuration(line.text || '');
+    const dur = line.seconds || estimateDuration(cleanText);
 
     if (isClaude && line.audio && audioMap[line.audio]) {
       playUrlTimed(audioMap[line.audio], state, dur);
@@ -670,7 +677,8 @@
       runStateFor(state, dur);
     }
 
-    hudLine.textContent = (index + 1) + '/' + episode.lines.length + ' — ' + speakerRaw;
+    hudLine.textContent = (index + 1) + '/' + episode.lines.length + ' — ' + speakerRaw
+      + (line.direction ? '  [' + line.direction + ']' : '');
     updateNextPreview();
   }
 

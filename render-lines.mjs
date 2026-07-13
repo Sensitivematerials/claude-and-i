@@ -56,8 +56,7 @@ async function main() {
   const force = !!args.force;
 
   const absJsonPath = path.resolve(jsonPath);
-  const projectRoot = path.resolve(path.dirname(absJsonPath), '..');
-  const outDir = args.out ? path.resolve(args.out) : path.join(projectRoot, 'audio');
+  const outDir = args.out ? path.resolve(args.out) : path.dirname(absJsonPath);
   await mkdir(outDir, { recursive: true });
 
   const raw = await readFile(absJsonPath, 'utf8');
@@ -88,7 +87,9 @@ async function main() {
       continue;
     }
 
-    const text = (line.text || '').trim();
+    // Guard: never speak a bracketed shot-direction tag, even if someone
+    // leaves one embedded in "text" instead of using the "direction" field.
+    const text = (line.text || '').replace(/^\s*\[[^\]]*\]\s*/, '').trim();
     if (!text) {
       console.log(`skip  ${filename} (empty text)`);
       skipped++;
