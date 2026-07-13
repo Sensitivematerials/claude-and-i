@@ -672,17 +672,43 @@
     updateNextPreview();
   }
 
-  // ---- Drag and drop ----
+  // ---- Drag and drop (supports dropping a whole folder, not just loose files) ----
+  function walkEntry(entry) {
+    return new Promise((resolve) => {
+      if (entry.isFile) {
+        entry.file((file) => resolve([file]), () => resolve([]));
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        reader.readEntries(async (entries) => {
+          const nested = await Promise.all(entries.map(walkEntry));
+          resolve(nested.flat());
+        }, () => resolve([]));
+      } else {
+        resolve([]);
+      }
+    });
+  }
+
+  async function getFilesFromDrop(dataTransfer) {
+    const items = dataTransfer.items;
+    if (items && items.length && items[0].webkitGetAsEntry) {
+      const entries = Array.from(items).map(i => i.webkitGetAsEntry()).filter(Boolean);
+      const nested = await Promise.all(entries.map(walkEntry));
+      return nested.flat();
+    }
+    return Array.from(dataTransfer.files); // fallback for browsers without entry API
+  }
+
   document.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropHint.classList.add('visible');
   });
   document.addEventListener('dragleave', () => dropHint.classList.remove('visible'));
-  document.addEventListener('drop', (e) => {
+  document.addEventListener('drop', async (e) => {
     e.preventDefault();
     dropHint.classList.remove('visible');
-    const files = Array.from(e.dataTransfer.files);
-    if (!files.length) return;
+    const files = await getFilesFromDrop(e.dataTransfer);
+    if (!files.length) { debug('no usable files found in that drop', true); return; }
 
     const hasJson = files.some(f => /\.json$/i.test(f.name));
     if (hasJson) {
@@ -691,7 +717,7 @@
     }
     const file = files[0];
     if (file.type && !file.type.startsWith('audio/') && !/\.(mp3|wav|m4a|aac|ogg|aiff)$/i.test(file.name)) {
-      debug('dropped file doesn\'t look like audio or an episode .json: ' + file.name, true);
+      debug('dropped file doesn\'t look like audio or an episode folder: ' + file.name, true);
       return;
     }
     playAudioFile(file);
